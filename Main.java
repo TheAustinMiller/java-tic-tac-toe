@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-public class TIC{
+public class Main{
     public static void main (String[] args){
         Scanner input = new Scanner(System.in);
         boolean player = true;
