@@ -6,6 +6,10 @@ import java.awt.image.BufferedImage;
 public class TicTacToe extends JFrame {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 1000;
+    private static final int BIG_SYMBOL = 75;
+    private static final int SMALL_SYMBOL = 15;
+    private int hoverX = -1;
+    private int hoverY = -1;
     private JPanel gamePanel;
     private JLabel positionLabel;
     private boolean gameOver;
@@ -78,19 +82,34 @@ public class TicTacToe extends JFrame {
         add(positionLabel, BorderLayout.SOUTH);
         add(resetButton, BorderLayout.NORTH);
 
-        // Add mouse motion listener to track mouse movement
-        gamePanel.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-
-            }
-        });
-
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 resetGame();
             }
+        });
+
+        gamePanel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (!gameOver) {
+                    hoverX = e.getX();
+                    hoverY = e.getY();
+                    gamePanel.repaint(); // Request a repaint to show the hover effect
+                }
+            }
+        });
+
+        gamePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // Clear hover effect when mouse leaves the panel
+                hoverX = -1;
+                hoverY = -1;
+                gamePanel.repaint();
+            }
+
+            // Add your click handling here if you haven't already
         });
 
         // Add mouse listener to handle clicks
@@ -217,11 +236,26 @@ public class TicTacToe extends JFrame {
             int y = POSITIONS[i][1];
 
             if (board[i] == 1) {
-                drawX(g2d, x, y);
+                drawX(g2d, x, y, BIG_SYMBOL);
             }
             if (board[i] == 2) {
-                drawO(g2d, x, y);
+                drawO(g2d, x, y, BIG_SYMBOL);
             }
+        }
+
+        if (!gameOver && hoverX >= 0 && hoverY >= 0) {
+            // Make the hover symbol semi-transparent
+            Composite originalComposite = g2d.getComposite();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+
+            if (xTurn) {
+                drawX(g2d, hoverX + 35, hoverY + 40, SMALL_SYMBOL);
+            } else {
+                drawO(g2d, hoverX + 35, hoverY + 40, SMALL_SYMBOL);
+            }
+
+            // Restore original composite
+            g2d.setComposite(originalComposite);
         }
 
         if (gameOver) {
@@ -241,11 +275,10 @@ public class TicTacToe extends JFrame {
      * @param x X coordinate
      * @param y Y coordinate
      */
-    public void drawX(Graphics2D g2d, int x, int y) {
+    public void drawX(Graphics2D g2d, int x, int y, int offset) {
         g2d.setColor(Color.RED);
         g2d.setStroke(new BasicStroke(15, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        int offset = 75;
         g2d.drawLine(x - offset, y - offset, x + offset, y + offset);
         g2d.drawLine(x - offset, y + offset, x + offset, y - offset);
     }
@@ -256,11 +289,10 @@ public class TicTacToe extends JFrame {
      * @param x X coordinate
      * @param y Y coordinate
      */
-    public void drawO(Graphics2D g2d, int x, int y) {
+    public void drawO(Graphics2D g2d, int x, int y, int radius) {
         g2d.setColor(Color.BLUE);
         g2d.setStroke(new BasicStroke(15, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        int radius = 75;
         g2d.drawOval(x - radius, y - radius, radius * 2, radius * 2);
     }
 }
