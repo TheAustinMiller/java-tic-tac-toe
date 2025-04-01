@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class TicTacToe extends JFrame {
@@ -10,7 +8,29 @@ public class TicTacToe extends JFrame {
     private static final int HEIGHT = 1000;
     private JPanel gamePanel;
     private JLabel positionLabel;
-
+    private boolean gameOver;
+    private boolean xTurn;
+    private int xWins;
+    private int oWins;
+    private int clicks;
+    private int[] board;
+    private JButton resetButton;
+    private static final int[][] POSITIONS = {
+            {300, 300}, {500, 300}, {700, 300},
+            {300, 500}, {500, 500}, {700, 500},
+            {300, 700}, {500, 700}, {700, 700}
+    };
+    private static final int[][] WIN_PATTERNS = {
+            {0, 1, 2}, {3, 4, 5}, {6, 7, 8},
+            {0, 3, 6}, {1, 4, 7}, {2, 5, 8},
+            {0, 4, 8}, {2, 4, 6}
+    };
+    private static final int[][] WIN_LINES = {
+            {200, 300, 800, 300}, {200, 500, 800, 500}, {200, 700, 800, 700},
+            {300, 200, 300, 800}, {500, 200, 500, 800}, {700, 200, 700, 800},
+            {200, 200, 800, 800}, {800, 200, 200, 800}
+    };
+    private static int WIN_INDEX;
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             TicTacToe visualizer = new TicTacToe();
@@ -19,6 +39,13 @@ public class TicTacToe extends JFrame {
     }
 
     public TicTacToe() {
+        xWins = 0;
+        oWins = 0;
+        clicks = 0;
+        WIN_INDEX = -1;
+        xTurn = true;
+        gameOver = false;
+        board = new int[9];
         setTitle("Tic Tac Toe");
         setSize(WIDTH, HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -35,24 +62,34 @@ public class TicTacToe extends JFrame {
         add(gamePanel, BorderLayout.CENTER);
 
         // Create a label to display mouse position
-        positionLabel = new JLabel("Mouse Position: X = 0, Y = 0");
+        positionLabel = new JLabel(xWins + " - " + oWins);
         positionLabel.setForeground(Color.WHITE);
         positionLabel.setHorizontalAlignment(JLabel.CENTER);
         positionLabel.setBackground(new Color(35, 35, 35));
         positionLabel.setOpaque(true);
         positionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        resetButton = new JButton("New Game");
+        resetButton.setFont(new Font("Arial", Font.BOLD, 16));
+        resetButton.setFocusPainted(false);
+        resetButton.setBackground(new Color(24, 24, 24));
+        resetButton.setForeground(Color.WHITE);
+        resetButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        resetButton.setBounds(400, 830, 200, 50);
         add(positionLabel, BorderLayout.SOUTH);
+        add(resetButton, BorderLayout.NORTH);
 
         // Add mouse motion listener to track mouse movement
         gamePanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                // Get x and y coordinates
-                int x = e.getX();
-                int y = e.getY();
 
-                // Update the label with current coordinates
-                positionLabel.setText("Mouse Position: X = " + x + ", Y = " + y);
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetGame();
             }
         });
 
@@ -60,8 +97,57 @@ public class TicTacToe extends JFrame {
         gamePanel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Handle mouse clicks for game logic if needed
-                System.out.println("Clicked at: X = " + e.getX() + ", Y = " + e.getY());
+                if (!gameOver) {
+                    if (e.getX() > 200 && e.getX() < 400 && e.getY() < 400 && e.getY() > 200 && board[0] == 0) {
+                        if (xTurn) { board[0] = 1; xTurn = false; } else { board[0] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 400 && e.getX() < 600 && e.getY() < 400 && e.getY() > 200 && board[1] == 0) {
+                        if (xTurn) { board[1] = 1; xTurn = false; } else { board[1] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 600 && e.getX() < 800 && e.getY() < 400 && e.getY() > 200 && board[2] == 0) {
+                        if (xTurn) { board[2] = 1; xTurn = false; } else { board[2] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 200 && e.getX() < 400 && e.getY() < 600 && e.getY() > 400 && board[3] == 0) {
+                        if (xTurn) { board[3] = 1; xTurn = false; } else { board[3] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 400 && e.getX() < 600 && e.getY() < 600 && e.getY() > 400 && board[4] == 0) {
+                        if (xTurn) { board[4] = 1; xTurn = false; } else { board[4] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 600 && e.getX() < 800 && e.getY() < 600 && e.getY() > 400 && board[5] == 0) {
+                        if (xTurn) { board[5] = 1; xTurn = false; } else { board[5] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 200 && e.getX() < 400 && e.getY() < 800 && e.getY() > 600 && board[6] == 0) {
+                        if (xTurn) { board[6] = 1; xTurn = false; } else { board[6] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 400 && e.getX() < 600 && e.getY() < 800 && e.getY() > 600 && board[7] == 0) {
+                        if (xTurn) { board[7] = 1; xTurn = false; } else { board[7] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (e.getX() > 600 && e.getX() < 800 && e.getY() < 800 && e.getY() > 600 && board[8] == 0) {
+                        if (xTurn) { board[8] = 1; xTurn = false; } else { board[8] = 2; xTurn = true; }
+                        clicks++;
+                    }
+                    if (checkWin()) {
+                        gameOver = true;
+                        if (xTurn) {
+                            positionLabel.setText("X WINS!");
+                            xWins++;
+                        } else {
+                            positionLabel.setText("O WINS!");
+                            oWins++;
+                        }
+                    } else if (clicks == 9) {
+                        positionLabel.setText("Tie!");
+                    }
+                }
+                repaint();
             }
             @Override
             public void mousePressed(MouseEvent e) {}
@@ -75,6 +161,35 @@ public class TicTacToe extends JFrame {
             @Override
             public void mouseExited(MouseEvent e) {}
         });
+    }
+
+    private void resetGame() {
+        for (int i = 0; i < 9; i++) {
+            board[i] = 0;
+        }
+        xTurn = true;
+        clicks = 0;
+        positionLabel.setText(xWins + " - " + oWins);
+        gameOver = false;
+        repaint();
+    }
+
+    public boolean checkWin() {
+        int cnt = 0;
+        for (int[] line: WIN_PATTERNS) {
+            if (board[line[0]] == 1 && board[line[1]] == 1 && board[line[2]] == 1) {
+                xTurn = !xTurn;
+                WIN_INDEX = cnt;
+                return true;
+            }
+            if (board[line[0]] == 2 && board[line[1]] == 2 && board[line[2]] == 2) {
+                xTurn = !xTurn;
+                WIN_INDEX = cnt;
+                return true;
+            }
+            cnt++;
+        }
+        return false;
     }
 
     private void drawBoard(Graphics g) {
@@ -96,6 +211,24 @@ public class TicTacToe extends JFrame {
         g2d.drawLine(600, 200, 600, 800);
         g2d.drawLine(200, 400, 800, 400);
         g2d.drawLine(200, 600, 800, 600);
+
+        for (int i = 0; i < 9; i++) {
+            int x = POSITIONS[i][0];
+            int y = POSITIONS[i][1];
+
+            if (board[i] == 1) {
+                drawX(g2d, x, y);
+            }
+            if (board[i] == 2) {
+                drawO(g2d, x, y);
+            }
+        }
+
+        if (gameOver) {
+            g2d.setColor(Color.WHITE);
+            g2d.setStroke(new BasicStroke(30, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2d.drawLine(WIN_LINES[WIN_INDEX][0], WIN_LINES[WIN_INDEX][1], WIN_LINES[WIN_INDEX][2], WIN_LINES[WIN_INDEX][3]);
+        }
 
         // Draw the final image to the screen
         g.drawImage(bufferedImage, 0, 0, null);
