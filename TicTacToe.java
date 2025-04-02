@@ -3,6 +3,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
+
+/**
+ * Tic Tac Toe
+ * @author - Austin Miller
+ * 04-01-2025
+ */
 public class TicTacToe extends JFrame {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 1000;
@@ -42,6 +48,9 @@ public class TicTacToe extends JFrame {
         });
     }
 
+    /**
+     * Creates a new Tic Tac Toe board and handles some of the logic
+     */
     public TicTacToe() {
         xWins = 0;
         oWins = 0;
@@ -95,7 +104,7 @@ public class TicTacToe extends JFrame {
                 if (!gameOver) {
                     hoverX = e.getX();
                     hoverY = e.getY();
-                    gamePanel.repaint(); // Request a repaint to show the hover effect
+                    gamePanel.repaint();
                 }
             }
         });
@@ -103,16 +112,13 @@ public class TicTacToe extends JFrame {
         gamePanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
-                // Clear hover effect when mouse leaves the panel
                 hoverX = -1;
                 hoverY = -1;
                 gamePanel.repaint();
             }
 
-            // Add your click handling here if you haven't already
         });
 
-        // Add mouse listener to handle clicks
         gamePanel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -182,6 +188,9 @@ public class TicTacToe extends JFrame {
         });
     }
 
+    /**
+     * Resets all variables and repaints a blank board
+     */
     private void resetGame() {
         for (int i = 0; i < 9; i++) {
             board[i] = 0;
@@ -193,6 +202,10 @@ public class TicTacToe extends JFrame {
         repaint();
     }
 
+    /**
+     * Checks every possible winning line for a win
+     * @return - whether win has occurred or not
+     */
     public boolean checkWin() {
         int cnt = 0;
         for (int[] line: WIN_PATTERNS) {
@@ -211,6 +224,10 @@ public class TicTacToe extends JFrame {
         return false;
     }
 
+    /**
+     * Paints a new board
+     * @param g - graphics
+     */
     private void drawBoard(Graphics g) {
         BufferedImage bufferedImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = bufferedImage.createGraphics();
@@ -244,7 +261,6 @@ public class TicTacToe extends JFrame {
         }
 
         if (!gameOver && hoverX >= 0 && hoverY >= 0) {
-            // Make the hover symbol semi-transparent
             Composite originalComposite = g2d.getComposite();
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
 
@@ -254,17 +270,18 @@ public class TicTacToe extends JFrame {
                 drawO(g2d, hoverX + 35, hoverY + 40, SMALL_SYMBOL);
             }
 
-            // Restore original composite
             g2d.setComposite(originalComposite);
         }
 
         if (gameOver) {
+            Composite originalComposite = g2d.getComposite();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
             g2d.setColor(Color.WHITE);
             g2d.setStroke(new BasicStroke(30, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2d.drawLine(WIN_LINES[WIN_INDEX][0], WIN_LINES[WIN_INDEX][1], WIN_LINES[WIN_INDEX][2], WIN_LINES[WIN_INDEX][3]);
+            g2d.setComposite(originalComposite);
         }
 
-        // Draw the final image to the screen
         g.drawImage(bufferedImage, 0, 0, null);
         g2d.dispose();
     }
